@@ -17,13 +17,21 @@ filebeat.autodiscover:
     - type: docker
       templates:
         - condition:
-            and:
-             - not.contains:
-                docker.container.image: elasticsearch
-             - not.contains:
-                docker.container.image: logstash
-             - not.contains:
-                docker.container.image: kibana
+          - contains:
+              docker.container.image: elasticsearch
+          - contains:
+              docker.container.image: logstash
+          - contains:
+              docker.container.image: kibana
+          - contains:
+              docker.container.image: shuffle-frontend
+          - contains:
+              docker.container.image: shuffle-backend
+          - contains:
+              docker.container.image: shuffle-orborus
+          - contains:
+              docker.container.image: opensearch
+
           config:
             - type: container
               paths:
@@ -35,6 +43,7 @@ processors:
 # Output to Logstash
 output.logstash:
   hosts: ["logstash:5044"]
+  ssl.certificate_authorities: ["/usr/share/filebeat/certs/logstash-forwarder.crt"]
 
 #=================================== Kibana ==========================================
 # Enable setting up Kibana

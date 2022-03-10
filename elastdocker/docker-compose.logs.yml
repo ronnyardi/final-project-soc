@@ -4,6 +4,10 @@ version: '3.5'
 volumes:
   filebeat-data:
 
+secrets:
+  logstash.certificate:
+    file: ./secrets/certs/logstash/logstash-forwarder.crt
+
 services:
   # Docker Logs Shipper ------------------------------
   filebeat:
@@ -22,3 +26,6 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - filebeat-data:/var/lib/filebeat/data
+    secrets:
+      - source: logstash.certificate
+        target: /usr/share/filebeat/certs/logstash-forwarder.crt
