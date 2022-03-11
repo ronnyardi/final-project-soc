@@ -16,22 +16,21 @@ filebeat.autodiscover:
   providers:
     - type: docker
       templates:
-        - condition:
+        - condition.and:
           - contains:
-              docker.container.image: elasticsearch
+              docker.container.name: elastic_elasticsearch_1
           - contains:
-              docker.container.image: logstash
+              docker.container.name: elastic_logstash_1
           - contains:
-              docker.container.image: kibana
+              docker.container.name: elastic_kibana_1
           - contains:
-              docker.container.image: shuffle-frontend
+              docker.container.name: shuffle-frontend
           - contains:
-              docker.container.image: shuffle-backend
+              docker.container.name: shuffle-backend
           - contains:
-              docker.container.image: shuffle-orborus
+              docker.container.name: shuffle-orborus
           - contains:
-              docker.container.image: opensearch
-
+              docker.container.name: shuffle-opensearch
           config:
             - type: container
               paths:

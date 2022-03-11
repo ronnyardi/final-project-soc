@@ -25,10 +25,10 @@ secrets:
     file: ./secrets/certs/kibana/kibana.crt
   kibana.key:
     file: ./secrets/certs/kibana/kibana.key
-  logstash.key: 
-    file: ./secrets/certs/logstash/logstash-forwarder.key
-  logstash.certificate:
+  logstash.certificate: 
     file: ./secrets/certs/logstash/logstash-forwarder.crt
+  logstash.key:
+    file: ./secrets/certs/logstash/logstash-forwarder.key
 
 services:
   elasticsearch:
@@ -89,10 +89,10 @@ services:
     secrets:
       - source: elastic.ca
         target: /certs/ca.crt
-      - source: logstash.key
+      - source: logstash.key 
         target: /certs/logstash-forwarder.key
       - source: logstash.certificate
-        target: /certs/logstash-forwarder.crt
+        target: /certs/logstash-forwarder.crt         
     environment:
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}

@@ -16,22 +16,22 @@ file:
   /var/ossec/etc/lists/audit-keys:
     exists: true
     mode: "0660"
-    owner: wazuh
-    group: wazuh
+    owner: ossec
+    group: ossec
     filetype: file
     contains: []
   /var/ossec/etc/ossec.conf:
     exists: true
     mode: "0660"
     owner: root
-    group: wazuh
+    group: ossec
     filetype: file
     contains: []
   /var/ossec/etc/rules/local_rules.xml:
     exists: true
     mode: "0660"
-    owner: wazuh
-    group: wazuh
+    owner: ossec
+    group: ossec
     filetype: file
     contains: []
   /var/ossec/etc/sslmanager.cert:
@@ -56,7 +56,7 @@ package:
   wazuh-manager:
     installed: true
     versions:
-    - 4.4.0
+    - 4.2.5
 port:
   tcp:1514:
     listening: true
@@ -71,26 +71,26 @@ port:
     ip:
     - 0.0.0.0
 user:
-  wazuh:
+  ossec:
     exists: true
     groups:
-    - wazuh
+    - ossec
     home: /var/ossec
     shell: /sbin/nologin
-  wazuh:
+  ossecm:
     exists: true
     groups:
-    - wazuh
+    - ossec
     home: /var/ossec
     shell: /sbin/nologin
-  wazuh:
+  ossecr:
     exists: true
     groups:
-    - wazuh
+    - ossec
     home: /var/ossec
     shell: /sbin/nologin
 group:
-  wazuh:
+  ossec:
     exists: true
 process:
   filebeat:
