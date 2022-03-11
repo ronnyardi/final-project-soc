@@ -1,0 +1,20 @@
+# This is a configuration snippet for the node filebeat
+# This snippet needs to be inserted into the file config/elasticsearch.yml of the respective node.
+# If the config file already contains SearchGuard configuration, this needs to be replaced.
+# Furthermore, you need to copy the files referenced below into the same directory.
+# Please refer to http://docs.search-guard.com/latest/configuring-tls for further configuration of your installation.
+
+
+opendistro_security.ssl.transport.pemcert_filepath: filebeat.pem
+opendistro_security.ssl.transport.pemkey_filepath: filebeat.key
+opendistro_security.ssl.transport.pemtrustedcas_filepath: root-ca.pem
+opendistro_security.ssl.transport.enforce_hostname_verification: false
+opendistro_security.ssl.transport.resolve_hostname: false
+opendistro_security.ssl.http.enabled: false
+opendistro_security.nodes_dn:
+- CN=node1,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+- CN=node2,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+- CN=node3,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+- CN=filebeat,OU=Ops,O=Example\, Inc.,DC=example,DC=com
+opendistro_security.authcz.admin_dn:
+- CN=admin,OU=Ops,O=Example\, Inc.,DC=example,DC=com
