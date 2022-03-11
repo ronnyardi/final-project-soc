@@ -18,7 +18,11 @@
      ```bash
      git commit -m "kasih pesan disini"
      ```
-5. Pastikan local folder sudah sama dengan repo dengan:
+5. Lakukan merging antara commit local yang sudah dilakukan dengan:
+     ```bash
+     git push
+     ```
+6. Pastikan local folder sudah sama dengan repo melalui url repo atau dengan:
      ```bash
      git status
      ```
