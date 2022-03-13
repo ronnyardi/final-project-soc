@@ -1,5 +1,5 @@
-.cache
-.ssh
+/.cache
+/.ssh
 .bash_history
 .bash_logout
 .bashrc
