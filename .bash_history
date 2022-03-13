@@ -123,3 +123,14 @@ clear
 ls
 sudo su
 sudo su
+exit
+ls
+cd elastdocker/
+ls
+nano docker-compose.logs.yml 
+sudo su
+cd
+ls
+dir
+docker ps
+sudo docker ps
