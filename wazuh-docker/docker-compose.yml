@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   wazuh:
-    image: wazuh/wazuh-odfe:4.2.5
+    image: wazuh/wazuh-odfe:4.4.0
     hostname: wazuh-manager
     restart: always
     ports:
@@ -12,10 +12,14 @@ services:
       - "514:514/udp"
       - "55000:55000"
     environment:
-      - ELASTICSEARCH_URL=https://elasticsearch:9200
-      - ELASTIC_USERNAME=admin
-      - ELASTIC_PASSWORD=admin
-      - FILEBEAT_SSL_VERIFICATION_MODE=none
+      - ELASTICSEARCH_URL=https://localhost:9200
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=Telmat@0393
+      - FILEBEAT_SSL_VERIFICATION_MODE=full
+      - SSL_CERTIFICATE_AUTHORITIES="/etc/ssl/ca.crt"                         # Path of Filebeat SSL CA
+      - SSL_CERTIFICATE="/etc/ssl/wazuh.crt"                                  # Path of Filebeat SSL Certificate
+      - SSL_KEY="/etc/ssl/wazuh.key"
+    
     volumes:
       - ossec_api_configuration:/var/ossec/api/configuration
       - ossec_etc:/var/ossec/etc
@@ -28,45 +32,6 @@ services:
       - ossec_wodles:/var/ossec/wodles
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
-
-  elasticsearch:
-    image: amazon/opendistro-for-elasticsearch:1.13.2
-    hostname: elasticsearch
-    restart: always
-    ports:
-      - "9200:9200"
-    environment:
-      - discovery.type=single-node
-      - cluster.name=wazuh-cluster
-      - network.host=0.0.0.0
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - bootstrap.memory_lock=true
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-
-  kibana:
-    image: wazuh/wazuh-kibana-odfe:4.2.5
-    hostname: kibana
-    restart: always
-    ports:
-      - 443:5601
-    environment:
-      - ELASTICSEARCH_USERNAME=admin
-      - ELASTICSEARCH_PASSWORD=admin
-      - SERVER_SSL_ENABLED=true
-      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/opendistroforelasticsearch.example.org.cert
-      - SERVER_SSL_KEY=/usr/share/kibana/config/opendistroforelasticsearch.example.org.key
-
-    depends_on:
-      - elasticsearch
-    links:
-      - elasticsearch:elasticsearch
-      - wazuh:wazuh
 
 volumes:
   ossec_api_configuration:

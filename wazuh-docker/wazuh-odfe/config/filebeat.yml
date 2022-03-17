@@ -13,10 +13,10 @@ setup.template.json.name: 'wazuh'
 setup.template.overwrite: true
 setup.ilm.enabled: false
 output.elasticsearch:
-  hosts: ['https://elasticsearch:9200']
-  #username:
-  #password:
-  #ssl.verification_mode:
-  #ssl.certificate_authorities:
-  #ssl.certificate:
-  #ssl.key:
+  hosts: ['https://localhost:9200']
+  username: elastic
+  password: Telmat@0393
+  ssl.verification_mode: full
+  ssl.certificate_authorities: "/etc/ssl/ca.crt"
+  ssl.certificate: "/etc/ssl/wazuh.crt"
+  ssl.key: "/etc/ssl/wazuh.key"
