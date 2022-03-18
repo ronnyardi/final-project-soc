@@ -32,3 +32,7 @@ xpack.security.http.ssl.client_authentication: optional
 
 # Monitoring
 xpack.monitoring.collection.enabled: true
+
+
+# TAMBAHAN : indexing active alert data into Elasticsearch.
+# xpack.actions.preconfiguredAlertHistoryEsIndex: true
