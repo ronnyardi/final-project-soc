@@ -1,0 +1,28 @@
+name: "a"
+type: "frequency"
+index: "mariadblog-*"
+is_enabled: true
+num_events: 2
+realert:
+  minutes: 5
+terms_size: 50
+timeframe:
+  minutes: 5
+timestamp_field: "@timestamp"
+timestamp_type: "iso"
+use_strftime_index: false
+alert_subject: "Test {} 123 aa☃"
+alert_subject_args:
+  - "message"
+  - "@log_name"
+alert_text: "Test {}  123 bb☃"
+alert_text_args:
+  - "message"
+filter:
+  - query:
+      query_string:
+        query: "@timestamp:*"
+alert:
+  - "telegram"
+telegram_bot_token: "5106783670:AAGmr8HnPlXdP3at6z1r7OXhlBnUNcqAEvU"
+telegram_room_id: "-737694604"
