@@ -36,7 +36,7 @@ printf "Installing Necessary Tools... \n"
 mkdir $OUTPUT_DIR/logstash
 
 printf "Generating Certificates... \n"
-openssl req -addext 'subjectAltName=DNS:soctathree.com' -x509 -days 3650 -batch -nodes -newkey rsa:4096 -keyout $OUTPUT_DIR/logstash/logstash-forwarder.key -out $OUTPUT_DIR/logstash/logstash-forwarder.crt &> /dev/null
+openssl req -addext 'subjectAltName=IP:35.240.140.173' -x509 -days 3650 -batch -nodes -newkey rsa:4096 -keyout $OUTPUT_DIR/logstash/logstash-forwarder.key -out $OUTPUT_DIR/logstash/logstash-forwarder.crt &> /dev/null
 
 printf "Applying Permissions... \n"
 chown -R 1000:0 $OUTPUT_DIR
