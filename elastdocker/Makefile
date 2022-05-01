@@ -74,7 +74,10 @@ images:			## Show all Images of ELK and all its extra components.
 prune:			## Remove ELK Containers and Delete Volume Data
 	@make stop && make rm
 	@docker volume prune -f
-
+agent:			## Install filebeat automatically
+	@./filebeat/installer/filebeat-install.sh
+agent-prune:	## Uninstall and prune filebeat
+	@./filebeat/installer/filebeat-uninstaller.sh
 help:       	## Show this help.
 	@echo "Make Application Docker Images and Containers using Docker-Compose files in 'docker' Dir."
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m (default: help)\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
