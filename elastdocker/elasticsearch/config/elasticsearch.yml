@@ -11,7 +11,7 @@ discovery.seed_hosts: ${ELASTIC_DISCOVERY_SEEDS}
 cluster.initial_master_nodes: ${ELASTIC_INIT_MASTER_NODE}
 
 ## License
-xpack.license.self_generated.type: basic
+xpack.license.self_generated.type: trial
 
 # Security
 xpack.security.enabled: true
