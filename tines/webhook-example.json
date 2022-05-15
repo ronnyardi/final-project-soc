@@ -1,0 +1,38 @@
+{
+  "elastic_security_webhook": {
+    "body": {
+      "name": "SSH Brute Force ",
+      "hostname": "web-vulnerable",
+      "event_id": "20f44577fc2143bb2a7e90eccb08d092cd5743397d1e60ca6f3783c88ffdb8f5",
+      "alert_id": "02ac3c70-cf78-11ec-bfdf-2b2c54b3f8d4",
+      "alert_tag": "auth,ssh",
+      "signal_index": ".siem-signals-default-000002",
+      "time": "2022-05-14T17:14:41.541Z",
+      "parent_id": "ydaQw4ABjnt4a7RUkaVu",
+      "parent_index": "filebeat-7.17.0"
+    },
+    "headers": {
+      "version": "HTTP/1.0",
+      "host": "proud-verge-4816.tines.com",
+      "x_real_ip": "10.1.1.244",
+      "x_forwarded_for": "35.240.140.173, 10.1.1.244",
+      "x_forwarded_host": "proud-verge-4816.tines.com",
+      "x_forwarded_proto": "https",
+      "connection": "close",
+      "x_forwarded_port": "443",
+      "x_amzn_trace_id": "Root=1-627fe385-0ba91997050937b565541a1d",
+      "accept": "application/json, text/plain, */*",
+      "user_agent": "axios/0.21.1",
+      "content-type": "application/json",
+      "content-length": "384",
+      "request-method": "POST",
+      "date": "Sat, 14 May 2022 17:14:45 UTC"
+    },
+    "response": {
+      "body": {
+        "status": "ok"
+      },
+      "status": 201
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "<<event_transform_action.firewall.name>>",
+  "inbound_rules": [
+    {
+      "protocol": "tcp",
+      "ports": "22",
+      "sources": {
+        "addresses": [
+          "120.188.34.211",
+          "167.205.0.219",
+          "::/0"
+        ]
+      }
+    },
+    {
+      "protocol": "icmp",
+      "ports": "0",
+      "sources": {
+        "addresses": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      }
+    }
+  ],
+  "outbound_rules": [
+    {
+      "protocol": "icmp",
+      "ports": "0",
+      "destinations": {
+        "addresses": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      }
+    },
+    {
+      "protocol": "tcp",
+      "ports": "0",
+      "destinations": {
+        "addresses": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      }
+    },
+    {
+      "protocol": "udp",
+      "ports": "0",
+      "destinations": {
+        "addresses": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      }
+    }
+  ],
+  "droplet_ids": [
+    299718245
+  ]
+}
