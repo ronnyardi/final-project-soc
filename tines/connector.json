@@ -1,15 +1,15 @@
 {
-  "name": "Detection Bruteforce",
-  "hostname": "web-vulnerable",
-  "username": "admin",
-  "command": "mevp.exe",
-  "agent": "filebeat",
-  "event_id": "1ebjii172679369f0h12he2fbht13f",
-  "source": "100.42.5.124",
-  "destination": "35.240.140.173",
-  "destination_port": "22",
-  "alert_id": "sddh891n2daid108213d2",
-  "index": "_Ddih128ebb2ju192hebjkc1239fha0d",
-  "time": "2022-05-13T13:55:48.980Z",
-  "occurances": "1"
+  "name":"{{#context.alerts}}{{signal.rule.name}},{{/context.alerts}}", 
+  "hostname":"{{#context.alerts}}{{host.name}},{{/context.alerts}}",
+  "username":"{{#context.alerts}}{{user.name}},{{/context.alerts}}",
+  "command":"{{#context.alerts}}{{process.executable}},{{/context.alerts}}",
+  "agent":"{{#context.alerts}}{{agent.id}},{{/context.alerts}}",
+  "event_id":"{{#context.alerts}}{{_id}},{{/context.alerts}}",
+  "source":"{{#context.alerts}}{{source.ip}},{{/context.alerts}}",
+  "destination":"{{#context.alerts}}{{destination.ip}},{{/context.alerts}}",
+  "destination_port":"{{#context.alerts}}{{destination.port}},{{/context.alerts}}",
+  "alert_id":"{{alert.id}}",
+  "index":"{{#context.alerts}}{{_index}},{{/context.alerts}}",
+  "time":"{{date}}",
+  "occurances":"{{state.signals_count}}"
 }

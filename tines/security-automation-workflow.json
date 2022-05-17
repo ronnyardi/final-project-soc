@@ -2,16 +2,16 @@
   "schema_version": 4,
   "name": "Security Automation Workflow",
   "description": null,
-  "guid": "0076cc5cf1a025b7f32f9dc1f49dda42",
-  "exported_at": "2022-05-14T23:37:06Z",
+  "guid": "9d38c7ec07172d92a3a840646a845462",
+  "exported_at": "2022-05-17T08:44:04Z",
   "agents": [
     {
       "type": "Agents::HTTPRequestAgent",
-      "name": "Search for IP Address in VirusTotal",
+      "name": "Search for File SHA in VirusTotal",
       "disabled": false,
-      "guid": "b9aef70da51d0368660c4b884ac49e26",
+      "guid": "23821d898f31b4bdc84309b31cc4ffb4",
       "options": {
-        "url": "https://www.virustotal.com/api/v3/ip_addresses/<<query_correlated_event.body._source.source.ip>>",
+        "url": "https://www.virustotal.com/api/v3/files/<<get_details.sha1sum>>",
         "method": "get",
         "payload": {},
         "headers": {
@@ -25,7 +25,7 @@
       "type": "Agents::WebhookAgent",
       "name": "Elastic Security Webhook",
       "disabled": false,
-      "guid": "fa89c3f9ab56dcab1d5042b33f9f2c94",
+      "guid": "bc563c782db08bd6ad031d6c1e636631",
       "options": {
         "path": "8f98bd59f397960b1a71f454673a276c",
         "secret": "f41e9b44bb146ee646219866dca0654d",
@@ -37,7 +37,7 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "GeoLocate an IP Address",
       "disabled": false,
-      "guid": "d3fe7815cd6b072e7334a4d17089adbf",
+      "guid": "dee92c030190e6cf1acc4f6f10782e65",
       "options": {
         "url": "http://ip-api.com/json/<<query_correlated_event.body._source.source.ip>>",
         "content_type": "json",
@@ -52,15 +52,15 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Create Elastic SIEM Case",
       "disabled": false,
-      "guid": "b79ffa325958eb5f573c8dfdc1701895",
+      "guid": "3507d90aeee3229a1782ccc515f32812",
       "options": {
         "url": "https://<<RESOURCE.kibana_url>>/api/cases",
         "content_type": "json",
         "method": "post",
         "payload": {
-          "title": "[Open Case] Tines - <<STORY_RUN_GUID()>>",
+          "title": "Case by Tines - <<STORY_RUN_GUID()>>",
           "tags": [],
-          "description": "This case was created by [Tines](<<STORY_RUN_LINK()>>) as a result of a following critical alert triggering. It can be found attached to this case. ",
+          "description": "This case was created by [Tines](<<STORY_RUN_LINK()>>) as a result of an alert triggering. It can be found attached to this case. ",
           "connector": {
             "id": "none",
             "name": "none",
@@ -85,7 +85,7 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Lookup IP in GreyNoise Community",
       "disabled": false,
-      "guid": "6c9552dd681c08bb8bdf394c2b7848fe",
+      "guid": "27339ffe75b2a342d8490b511eee4f58",
       "options": {
         "url": "https://api.greynoise.io/v3/community/<<query_correlated_event.body._source.source.ip>>",
         "content_type": "json",
@@ -100,7 +100,7 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Query Correlated Event",
       "disabled": false,
-      "guid": "dcb3e9143d5ed86e8647c422ad4452b5",
+      "guid": "60d702c85145c59f0f85ce64b129b6bc",
       "options": {
         "url": "https://<<RESOURCE.elasticsearch_url>>/<<elastic_security_webhook.body.parent_index>>/_doc/<<elastic_security_webhook.body.parent_id>>",
         "content_type": "json",
@@ -120,82 +120,17 @@
       "keep_events_for": 0
     },
     {
-      "type": "Agents::TriggerAgent",
-      "name": "Is SQL injection?",
-      "disabled": false,
-      "guid": "c2a0df4a640bef615a642511c6701ccb",
-      "options": {
-        "rules": [
-          {
-            "type": "field==value",
-            "value": "sqli",
-            "path": "<<elastic_security_webhook.body.alert_tag>>"
-          }
-        ]
-      },
-      "keep_events_for": 0
-    },
-    {
       "type": "Agents::HTTPRequestAgent",
       "name": "Post Message to Telegram Bot",
       "disabled": false,
-      "guid": "3f1dfe4761ef11543d0c05ff09c088f3",
+      "guid": "586f4d6050c704d0ad8faa9f7ff0c3a4",
       "options": {
         "url": "https://api.telegram.org/bot<<CREDENTIAL.telegram_bot>>/sendMessage",
         "content_type": "json",
         "method": "post",
         "payload": {
           "chat_id": "<<RESOURCE.telegram_chat_id>>",
-          "text": "[Alert]\nAn alert created in Elastic Security detected as <<elastic_security_webhook.body.name>> at <<elastic_security_webhook.body.time>>.\n\nSource IP: <<query_correlated_event.body._source.source.ip>>\nCountry: <<query_correlated_event.body._source.source.geo.country_name>>\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\n(DEMO TA3)"
-        }
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::TriggerAgent",
-      "name": "Is XSS Attack?",
-      "disabled": false,
-      "guid": "ddcc60ad9864ffdd328ed3b922508bde",
-      "options": {
-        "rules": [
-          {
-            "type": "field==value",
-            "value": "xss",
-            "path": "<<elastic_security_webhook.body.alert_tag>>"
-          }
-        ]
-      },
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::TriggerAgent",
-      "name": "Is XSS Reflected?",
-      "disabled": false,
-      "guid": "94647b324111beee4c81266798a5f486",
-      "options": {
-        "rules": [
-          {
-            "type": "in",
-            "value": "Reflected",
-            "path": "=elastic_security_webhook.body.name"
-          }
-        ]
-      },
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::HTTPRequestAgent",
-      "name": "Post Message to Telegram Bot",
-      "disabled": false,
-      "guid": "68f1d9fa1811385b319713c57eb63495",
-      "options": {
-        "url": "https://api.telegram.org/bot<<CREDENTIAL.telegram_bot>>/sendMessage",
-        "content_type": "json",
-        "method": "post",
-        "payload": {
-          "chat_id": "<<RESOURCE.telegram_chat_id>>",
-          "text": "[Alert]\nAn alert created in Elastic Security detected as <<elastic_security_webhook.body.name>> at <<elastic_security_webhook.body.time>>.\n\nSource IP: <<query_correlated_event.body._source.source.ip>>\nCountry: <<query_correlated_event.body._source.source.geo.country_name>>\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\n(DEMO TA3)"
+          "text": "[Alert - <<elastic_security_webhook.body.name>>]\nAn alert created in Elastic Security detected as <<elastic_security_webhook.body.name>> at <<elastic_security_webhook.body.time>>.\n\nSource IP: <<query_correlated_event.body._source.source.ip>>\nOrganization: <<query_correlated_event.body._source.source.as.organization.name>>\nCountry: <<query_correlated_event.body._source.source.geo.country_name>>\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\n(DEMO TA3)"
         }
       },
       "schedule": null,
@@ -205,7 +140,7 @@
       "type": "Agents::TriggerAgent",
       "name": "Is Botnet?",
       "disabled": false,
-      "guid": "022337670ca6d53b92f67c7a5c7b5be4",
+      "guid": "2e72eb81a789a66469ffeaeaca08fa2c",
       "options": {
         "rules": [
           {
@@ -221,7 +156,7 @@
       "type": "Agents::TriggerAgent",
       "name": "Malicious?",
       "disabled": false,
-      "guid": "74e4d7a50a29c00b2611fbbd50f0ef99",
+      "guid": "8e65860f5eb4ff946318df4154773475",
       "options": {
         "rules": [
           {
@@ -237,13 +172,13 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Block On DigitalOcean Firewall",
       "disabled": false,
-      "guid": "468ed7b662b25d90f12e59b0443a5061",
+      "guid": "2fd7ce62dba8b1fdb423540425f0ed5d",
       "options": {
-        "url": "https://api.digitalocean.com/v2/firewalls/<<event_transform_action.firewall.id>>",
+        "url": "https://api.digitalocean.com/v2/firewalls/<<extract_firewall_id.firewall.id>>",
         "content_type": "json",
         "method": "put",
         "payload": {
-          "name": "<<event_transform_action.firewall.name>>",
+          "name": "<<extract_firewall_id.firewall.name>>",
           "inbound_rules": [
             {
               "protocol": "tcp",
@@ -314,14 +249,14 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Add Comment to Case",
       "disabled": false,
-      "guid": "7d530694201a3af221c8f489eccc811c",
+      "guid": "aa3b94d0f16d21ce427b7a1d0c9bbdaa",
       "options": {
         "url": "https://<<RESOURCE.kibana_url>>/api/cases/<<create_elastic_siem_case.body.id>>/comments",
         "content_type": "json",
         "method": "post",
         "payload": {
           "type": "user",
-          "comment": "`<<query_correlated_event.body._source.source.ip>>` was **<%if block_on_digitalocean_firewall.status = 200%> successfully <%else%> unsuccessfully <%endif%> ** blocked on the firewall after being determined as **<<lookup_ip_in_greynoise_community.body.classification>>** by [Greynoise](https://www.greynoise.io/viz/ip/<<query_correlated_event.body._source.source.ip>>). The response to the request can be found below:\n```\n<<NEAT_JSON(block_on_digitalocean_firewall.body)>>\n```\n\nClick [here](https://cloud.digitalocean.com/networking/firewalls/<<event_transform_action.firewall.id>>) to view this new rule in the DigitalOcean.",
+          "comment": "`<<query_correlated_event.body._source.source.ip>>` was **<%if block_on_digitalocean_firewall.status = 200%> successfully <%else%> unsuccessfully <%endif%> ** blocked on the firewall after being determined as **<<lookup_ip_in_greynoise_community.body.classification>>** by [Greynoise](https://www.greynoise.io/viz/ip/<<query_correlated_event.body._source.source.ip>>). The response to the request can be found below:\n```\n<<NEAT_JSON(block_on_digitalocean_firewall.body)>>\n```\n\nClick [here](https://cloud.digitalocean.com/networking/firewalls/<<extract_firewall_id.firewall.id>>) to view this new rule in the DigitalOcean.",
           "owner": "securitySolution"
         },
         "headers": {
@@ -337,68 +272,22 @@
       "type": "Agents::EmailAgent",
       "name": "Email Action",
       "disabled": false,
-      "guid": "7425d9a7887e96394a78691503d59fd6",
+      "guid": "2aa8e8cbcf7fb08116cada33e6d14803",
       "options": {
         "recipients": [
           "demo-ta3@tutanota.com"
         ],
         "subject": "Case created in Elastic Security",
-        "body": "\\<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\\<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\n\\<head>\n\\<meta name=\"viewport\" content=\"width=device-width\" />\n\\<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n\n\n\\<style type=\"text/css\">\nimg {\nmax-width: 100%;\n}\nbody {\n-webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;\n}\nbody {\nbackground-color: #f6f6f6;\n}\n@media only screen and (max-width: 640px) {\n  body {\n    padding: 0 !important;\n  }\n  h1 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h2 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h3 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h4 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h1 {\n    font-size: 22px !important;\n  }\n  h2 {\n    font-size: 18px !important;\n  }\n  h3 {\n    font-size: 16px !important;\n  }\n  .container {\n    padding: 0 !important; width: 100% !important;\n  }\n  .content {\n    padding: 0 !important;\n  }\n  .content-wrap {\n    padding: 10px !important;\n  }\n  .invoice {\n    width: 100% !important;\n  }\n}\n\\</style>\n\\</head>\n\n\\<body itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\n\n\\<table class=\"body-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\">\\</td>\n\t\t\\<td class=\"container\" width=\"600\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;\" valign=\"top\">\n\t\t\t\\<div class=\"content\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;\">\n\t\t\t\t\\<table class=\"main\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;\" bgcolor=\"#fff\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"alert alert-warning\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;\" align=\"center\" bgcolor=\"#FF9F00\" valign=\"top\">\n\t\t\t\t\t\t\tNew Case Created in Elastic Security.\n\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\\<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tA new case has been created that requires your attention. Click on the link below to view.\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\\<a href=\"<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/cases/<<create_elastic_siem_case.body.id>>\" class=\"btn-primary\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;\">Go to case\\</a>\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tSent via Tines automation <<STORY_RUN_GUID()>>\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\</table>\\</td>\n\t\t\t\t\t\\</tr>\\</table>\\<div class=\"footer\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;\">\n\t\t\t\t\t\\<table width=\"100%\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"aligncenter content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;\" align=\"center\" valign=\"top\">\\<a href=\"<<STORY_RUN_LINK()>>\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\">View\\</a> Tines story run.\\</td>\n\t\t\t\t\t\t\\</tr>\\</table>\\</div>\\</div>\n\t\t\\</td>\n\t\t\\<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\">\\</td>\n\t\\</tr>\\</table>\\</body>\n\\</html>"
+        "body": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\n<head>\n<meta name=\"viewport\" content=\"width=device-width\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n\n\n<style type=\"text/css\">\nimg {\nmax-width: 100%;\n}\nbody {\n-webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;\n}\nbody {\nbackground-color: #f6f6f6;\n}\n@media only screen and (max-width: 640px) {\n  body {\n    padding: 0 !important;\n  }\n  h1 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h2 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h3 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h4 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h1 {\n    font-size: 22px !important;\n  }\n  h2 {\n    font-size: 18px !important;\n  }\n  h3 {\n    font-size: 16px !important;\n  }\n  .container {\n    padding: 0 !important; width: 100% !important;\n  }\n  .content {\n    padding: 0 !important;\n  }\n  .content-wrap {\n    padding: 10px !important;\n  }\n  .invoice {\n    width: 100% !important;\n  }\n}\n</style>\n</head>\n\n<body itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\n\n<table class=\"body-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\"></td>\n\t\t<td class=\"container\" width=\"600\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;\" valign=\"top\">\n\t\t\t<div class=\"content\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;\">\n\t\t\t\t<table class=\"main\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;\" bgcolor=\"#fff\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"alert alert-warning\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;\" align=\"center\" bgcolor=\"#FF9F00\" valign=\"top\">\n\t\t\t\t\t\t\tNew Case Created in Elastic Security.\n\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tA new case has been created that requires your attention. Click on the link below to view.\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t<a href=\"<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/cases/<<create_elastic_siem_case.body.id>>\" class=\"btn-primary\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;\">Go to case</a>\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tSent via Tines automation <<STORY_RUN_GUID()>>\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr></table></td>\n\t\t\t\t\t</tr></table><div class=\"footer\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;\">\n\t\t\t\t\t<table width=\"100%\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"aligncenter content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;\" align=\"center\" valign=\"top\"><a href=\"<<STORY_RUN_LINK()>>\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\">View</a> Tines story run.</td>\n\t\t\t\t\t\t</tr></table></div></div>\n\t\t</td>\n\t\t<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\"></td>\n\t</tr></table></body>\n</html>"
       },
       "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::EmailAgent",
-      "name": "Email Action",
-      "disabled": false,
-      "guid": "8c1ea2b1e135c69a757b885aefecbc52",
-      "options": {
-        "recipients": [
-          "demo-ta3@tutanota.com"
-        ],
-        "subject": "New Case created in Elastic Security",
-        "body": "\\<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\\<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\n\\<head>\n\\<meta name=\"viewport\" content=\"width=device-width\" />\n\\<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n\n\n\\<style type=\"text/css\">\nimg {\nmax-width: 100%;\n}\nbody {\n-webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;\n}\nbody {\nbackground-color: #f6f6f6;\n}\n@media only screen and (max-width: 640px) {\n  body {\n    padding: 0 !important;\n  }\n  h1 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h2 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h3 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h4 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h1 {\n    font-size: 22px !important;\n  }\n  h2 {\n    font-size: 18px !important;\n  }\n  h3 {\n    font-size: 16px !important;\n  }\n  .container {\n    padding: 0 !important; width: 100% !important;\n  }\n  .content {\n    padding: 0 !important;\n  }\n  .content-wrap {\n    padding: 10px !important;\n  }\n  .invoice {\n    width: 100% !important;\n  }\n}\n\\</style>\n\\</head>\n\n\\<body itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\n\n\\<table class=\"body-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\">\\</td>\n\t\t\\<td class=\"container\" width=\"600\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;\" valign=\"top\">\n\t\t\t\\<div class=\"content\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;\">\n\t\t\t\t\\<table class=\"main\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;\" bgcolor=\"#fff\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"alert alert-warning\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;\" align=\"center\" bgcolor=\"#FF9F00\" valign=\"top\">\n\t\t\t\t\t\t\tNew Case Created in Elastic Security.\n\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\\<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tA new case has been created that requires your attention. Click on the link below to view.\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\\<a href=\"<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/cases/<<create_elastic_siem_case.body.id>>\" class=\"btn-primary\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;\">Go to case\\</a>\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tSent via Tines automation <<STORY_RUN_GUID()>>\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\</table>\\</td>\n\t\t\t\t\t\\</tr>\\</table>\\<div class=\"footer\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;\">\n\t\t\t\t\t\\<table width=\"100%\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"aligncenter content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;\" align=\"center\" valign=\"top\">\\<a href=\"<<STORY_RUN_LINK()>>\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\">View\\</a> Tines story run.\\</td>\n\t\t\t\t\t\t\\</tr>\\</table>\\</div>\\</div>\n\t\t\\</td>\n\t\t\\<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\">\\</td>\n\t\\</tr>\\</table>\\</body>\n\\</html>"
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::EmailAgent",
-      "name": "Email Action",
-      "disabled": false,
-      "guid": "883dfa3a5981e6bf58ee5182ba3ca077",
-      "options": {
-        "recipients": [
-          "demo-ta3@tutanota.com"
-        ],
-        "subject": "Case created in Elastic Security",
-        "body": "\\<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\\<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\n\\<head>\n\\<meta name=\"viewport\" content=\"width=device-width\" />\n\\<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n\n\n\\<style type=\"text/css\">\nimg {\nmax-width: 100%;\n}\nbody {\n-webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;\n}\nbody {\nbackground-color: #f6f6f6;\n}\n@media only screen and (max-width: 640px) {\n  body {\n    padding: 0 !important;\n  }\n  h1 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h2 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h3 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h4 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h1 {\n    font-size: 22px !important;\n  }\n  h2 {\n    font-size: 18px !important;\n  }\n  h3 {\n    font-size: 16px !important;\n  }\n  .container {\n    padding: 0 !important; width: 100% !important;\n  }\n  .content {\n    padding: 0 !important;\n  }\n  .content-wrap {\n    padding: 10px !important;\n  }\n  .invoice {\n    width: 100% !important;\n  }\n}\n\\</style>\n\\</head>\n\n\\<body itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\n\n\\<table class=\"body-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\">\\</td>\n\t\t\\<td class=\"container\" width=\"600\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;\" valign=\"top\">\n\t\t\t\\<div class=\"content\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;\">\n\t\t\t\t\\<table class=\"main\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;\" bgcolor=\"#fff\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"alert alert-warning\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;\" align=\"center\" bgcolor=\"#FF9F00\" valign=\"top\">\n\t\t\t\t\t\t\tNew Case Created in Elastic Security.\n\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\\<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tA new case has been created that requires your attention. Click on the link below to view.\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\\<a href=\"<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/cases/<<create_elastic_siem_case.body.id>>\" class=\"btn-primary\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;\">Go to case\\</a>\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tSent via Tines automation <<STORY_RUN_GUID()>>\n\t\t\t\t\t\t\t\t\t\\</td>\n\t\t\t\t\t\t\t\t\\</tr>\\</table>\\</td>\n\t\t\t\t\t\\</tr>\\</table>\\<div class=\"footer\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;\">\n\t\t\t\t\t\\<table width=\"100%\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\\<td class=\"aligncenter content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;\" align=\"center\" valign=\"top\">\\<a href=\"<<STORY_RUN_LINK()>>\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\">View\\</a> Tines story run.\\</td>\n\t\t\t\t\t\t\\</tr>\\</table>\\</div>\\</div>\n\t\t\\</td>\n\t\t\\<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\">\\</td>\n\t\\</tr>\\</table>\\</body>\n\\</html>"
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::TriggerAgent",
-      "name": "Is XSS DOM?",
-      "disabled": false,
-      "guid": "f469ce4d9b7ab4e5e7ea9a999d561160",
-      "options": {
-        "rules": [
-          {
-            "type": "in",
-            "value": "DOM",
-            "path": "=elastic_security_webhook.body.name"
-          }
-        ]
-      },
       "keep_events_for": 0
     },
     {
       "type": "Agents::HTTPRequestAgent",
       "name": "Get DigitalOcean Firewall Details",
       "disabled": false,
-      "guid": "86f3ad866e580f78de98535194d4d355",
+      "guid": "3db4792977f4d26b695c9f00a064c217",
       "options": {
         "url": "https://api.digitalocean.com/v2/firewalls",
         "content_type": "json",
@@ -414,9 +303,9 @@
     },
     {
       "type": "Agents::EventTransformationAgent",
-      "name": "Event Transform Action",
+      "name": "Extract Firewall ID",
       "disabled": false,
-      "guid": "ccedc2879e41df21d81167bf553fe96d",
+      "guid": "43a74ee3412fd4ab71c5f39de2c0c481",
       "options": {
         "mode": "explode",
         "path": "=get_digitalocean_firewall_details.body.firewalls",
@@ -429,7 +318,7 @@
       "type": "Agents::EventTransformationAgent",
       "name": "Keep Blocking for 15 minutes",
       "disabled": false,
-      "guid": "199451f95dab416d831edd0a2ac26218",
+      "guid": "19dcb7aeaf9b39568409219cafb69327",
       "options": {
         "mode": "delay",
         "seconds": "900"
@@ -441,13 +330,13 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Restore DigitalOcean Firewall",
       "disabled": false,
-      "guid": "bfef94d6ebfbb88a879c3aba198ea553",
+      "guid": "3317f2c30498cc8d1eff9efd5a299d8a",
       "options": {
-        "url": "https://api.digitalocean.com/v2/firewalls/<<event_transform_action.firewall.id>>",
+        "url": "https://api.digitalocean.com/v2/firewalls/<<extract_firewall_id.firewall.id>>",
         "content_type": "json",
         "method": "put",
         "payload": {
-          "name": "<<event_transform_action.firewall.name>>",
+          "name": "<<extract_firewall_id.firewall.name>>",
           "inbound_rules": [
             {
               "protocol": "tcp",
@@ -516,108 +405,17 @@
       "keep_events_for": 0
     },
     {
-      "type": "Agents::WebhookAgent",
-      "name": "Form Webhook",
-      "disabled": false,
-      "guid": "189194ebd24e2c45b45a8793855e0c1f",
-      "options": {
-        "path": "16cc83b51d5d189e55bac29e2c2540a7",
-        "secret": "19713a737018e832fe677547054b1161",
-        "verbs": "get,post"
-      },
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::HTTPRequestAgent",
-      "name": "Search for IP Address in VirusTotal",
-      "disabled": false,
-      "guid": "34efb03777c561d430ceacb9c896ec25",
-      "options": {
-        "url": "https://www.virustotal.com/api/v3/<<query_correlated_event.body._source.source.ip>>",
-        "method": "get",
-        "payload": {},
-        "headers": {
-          "x-apikey": "<<CREDENTIAL.virustotal>>"
-        }
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::EmailAgent",
-      "name": "Email Action",
-      "disabled": false,
-      "guid": "e2d0add2892ce68967c78d58ea87a118",
-      "options": {
-        "recipients": [
-          "demo-ta3@tutanota.com"
-        ],
-        "subject": "New Case created in Elastic Security",
-        "body": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\n<head>\n<meta name=\"viewport\" content=\"width=device-width\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n\n\n<style type=\"text/css\">\nimg {\nmax-width: 100%;\n}\nbody {\n-webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;\n}\nbody {\nbackground-color: #f6f6f6;\n}\n@media only screen and (max-width: 640px) {\n  body {\n    padding: 0 !important;\n  }\n  h1 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h2 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h3 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h4 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h1 {\n    font-size: 22px !important;\n  }\n  h2 {\n    font-size: 18px !important;\n  }\n  h3 {\n    font-size: 16px !important;\n  }\n  .container {\n    padding: 0 !important; width: 100% !important;\n  }\n  .content {\n    padding: 0 !important;\n  }\n  .content-wrap {\n    padding: 10px !important;\n  }\n  .invoice {\n    width: 100% !important;\n  }\n}\n</style>\n</head>\n\n<body itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\n\n<table class=\"body-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\"></td>\n\t\t<td class=\"container\" width=\"600\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;\" valign=\"top\">\n\t\t\t<div class=\"content\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;\">\n\t\t\t\t<table class=\"main\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;\" bgcolor=\"#fff\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"alert alert-warning\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;\" align=\"center\" bgcolor=\"#FF9F00\" valign=\"top\">\n\t\t\t\t\t\t\tNew Case Created in Elastic Security.\n\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tA new case has been created that requires your attention. Click on the link below to view.\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t<a href=\"<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/cases/<<create_elastic_siem_case.body.id>>\" class=\"btn-primary\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;\">Go to case</a>\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tSent via Tines automation <<STORY_RUN_GUID()>>\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr></table></td>\n\t\t\t\t\t</tr></table><div class=\"footer\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;\">\n\t\t\t\t\t<table width=\"100%\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"aligncenter content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;\" align=\"center\" valign=\"top\"><a href=\"<<STORY_RUN_LINK()>>\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\">View</a> Tines story run.</td>\n\t\t\t\t\t\t</tr></table></div></div>\n\t\t</td>\n\t\t<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\"></td>\n\t</tr></table></body>\n</html>"
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::TriggerAgent",
-      "name": "Trigger Action",
-      "disabled": false,
-      "guid": "1001d87e0f37c85d7a4a3ed2a59f4d53",
-      "options": {
-        "rules": [
-          {
-            "type": "regex",
-            "value": ".*",
-            "path": "<<form_webhook.body.url_you_want_to_analyze>>"
-          }
-        ]
-      },
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::HTTPRequestAgent",
-      "name": "Search for IP Address in VirusTotal",
-      "disabled": false,
-      "guid": "4de1a2aeb6f210d36f8802a797348e4d",
-      "options": {
-        "url": "https://www.virustotal.com/api/v3/<<query_correlated_event.body._source.source.ip>>",
-        "method": "get",
-        "payload": {},
-        "headers": {
-          "x-apikey": "<<CREDENTIAL.virustotal>>"
-        }
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
-      "type": "Agents::HTTPRequestAgent",
-      "name": "Search for URL in VirusTotal",
-      "disabled": false,
-      "guid": "9e4702aece87e13236d0cd6a95df7f5f",
-      "options": {
-        "url": "https://www.virustotal.com/api/v3/<<query_correlated_event.body._source.source.ip>>",
-        "method": "get",
-        "payload": {},
-        "headers": {
-          "x-apikey": "<<CREDENTIAL.virustotal>>"
-        }
-      },
-      "schedule": null,
-      "keep_events_for": 0
-    },
-    {
       "type": "Agents::HTTPRequestAgent",
       "name": "Add Comment to Case",
       "disabled": false,
-      "guid": "575f7ccda14a3dee456eee4dd87f7e03",
+      "guid": "ba1d92d54c7e1eafe7ffd5141447ca45",
       "options": {
         "url": "https://<<RESOURCE.kibana_url>>/api/cases/<<create_elastic_siem_case.body.id>>/comments",
         "content_type": "json",
         "method": "post",
         "payload": {
           "type": "user",
-          "comment": "`<<for_each_ip.individual_ip>>` was found present **<<query_elasticsearch_for_ip_hits.body.hits.total.value>>** times within our last 90 days of logs. \n\nThere were also **<<query_elasticsearch_for_ip_detection_hits.body.hits.total.value>>** alerts triggered for the same IP.\n\nPlease view the automatically created [timeline](<<APPEND(\"https://\",RESOURCE.kibana_url)>>/app/security/timelines?timeline=(id:%27<<create_timeline_with_ip_search.body.data.persistTimeline.timeline.savedObjectId>>%27,isOpen:!t)) below to find out more.\n",
+          "comment": "`<<query_correlated_event.body._source.source.ip>>` was found present **<<query_elasticsearch_for_ip_hits.body.hits.total.value>>** times within our last 90 days of logs. \n\nThere were also **<<query_elasticsearch_for_ip_detection_hits.body.hits.total.value>>** alerts triggered for the same IP.\n\nPlease view the automatically created [timeline](<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/timelines?timeline=(id:%27<<create_timeline_with_ip_search.body.data.persistTimeline.timeline.savedObjectId>>%27,isOpen:!t)) below to find out more.\n",
           "owner": "securitySolution"
         },
         "headers": {
@@ -633,7 +431,7 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Create Timeline With IP Search",
       "disabled": false,
-      "guid": "41fc12032c2d2cfece77dcee7dd25399",
+      "guid": "90d1f52868b79f132521a52125b35a44",
       "options": {
         "url": "https://<<RESOURCE.kibana_url>>/api/timeline",
         "content_type": "json",
@@ -707,7 +505,7 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Query Elasticsearch for IP Detection Hits",
       "disabled": false,
-      "guid": "8e68022fb8d9953332cf7123f1a8d2c7",
+      "guid": "fc25e6cedbbba400a30d74e8a35387c8",
       "options": {
         "url": "https://<<RESOURCE.elasticsearch_url>>/.siem-signals-default*/_search",
         "content_type": "json",
@@ -778,7 +576,7 @@
       "type": "Agents::HTTPRequestAgent",
       "name": "Query Elasticsearch for IP Hits",
       "disabled": false,
-      "guid": "2ade3e1c2d2fd8cccf4d2b6b424270e3",
+      "guid": "2e153889e4646813dfe16bdc91f7f505",
       "options": {
         "url": "https://<<RESOURCE.elasticsearch_url>>/logs-*,filebeat-*,packetbeat-*/_search",
         "content_type": "json",
@@ -844,13 +642,320 @@
       },
       "schedule": null,
       "keep_events_for": 0
+    },
+    {
+      "type": "Agents::EmailAgent",
+      "name": "Email Action",
+      "disabled": false,
+      "guid": "134cf4f43f304b2831679434d0219edf",
+      "options": {
+        "recipients": [
+          "demo-ta3@tutanota.com"
+        ],
+        "subject": "New Attack Detected in Elastic Security (tags: <<elastic_security_webhook.body.alert_tag>>)",
+        "body": "Hello,\\<br/>\\<br/>\n\nAn alert has been detected that relates to <<elastic_security_webhook.body.name>>. The alert details are shown below:\\<br/>\n\\<b>IP Address:\\</b> <<query_correlated_event.body._source.source.ip>> \\<br/>\n\\<b>Organization:\\</b> <<query_correlated_event.body._source.source.as.organization.name>> \\<br/>\n\\<b>City:\\</b> <<query_correlated_event.body._source.source.geo.city_name>> \\<br/>\n\\<b>Country:\\</b> <<query_correlated_event.body._source.source.geo.country_name>>\\<br/>\\<br/>\n\nPayload related to this attack are shown below:\\<br/>\n\\<b>Payload:\\</b> \"<<HTML_ENCODE(query_correlated_event.body._source.url.query)>>\"\\<br/>\\<br/>\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\\<br/>\\<br/>\n\n(DEMO TA3)"
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Is Malicious?",
+      "disabled": false,
+      "guid": "1bf09ea9e87a9d3438dbe64a96894722",
+      "options": {
+        "rules": [
+          {
+            "type": "in",
+            "value": "malicious",
+            "path": "=elastic_security_webhook.body.alert_tag"
+          }
+        ]
+      },
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Is Web Related?",
+      "disabled": false,
+      "guid": "307010d15d1f2f5ad0dced672ff7eb53",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "web",
+            "path": "<<query_correlated_event.body._source.event.category>>"
+          }
+        ]
+      },
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Get Details",
+      "disabled": false,
+      "guid": "b314391efbd900a9a13d0fdbb1b2b99d",
+      "options": {
+        "mode": "message_only",
+        "loop": false,
+        "payload": {
+          "filename": "<<IF(INCLUDES(query_correlated_event.body._source.process.args,\"https://www.eicar.org/download/eicar.com.txt\"),\"eicar.com.txt\",\"-\")>>",
+          "sha1sum": "<<IF(INCLUDES(query_correlated_event.body._source.process.args,\"https://www.eicar.org/download/eicar.com.txt\"),\"3395856ce81f2b7382dee72602f798b642f14140\",\"-\")>>"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Malicious or Malware?",
+      "disabled": false,
+      "guid": "2330ca109d0b71ddf11a5b3d94e5ae80",
+      "options": {
+        "rules": [
+          {
+            "type": "field>=value",
+            "value": "5",
+            "path": "<<search_for_file_sha_in_virustotal.body.data.attributes.total_votes.malicious>>"
+          }
+        ]
+      },
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Create Elastic SIEM Case",
+      "disabled": false,
+      "guid": "0942b0755259d1a78eac6a1488131c0c",
+      "options": {
+        "url": "https://<<RESOURCE.kibana_url>>/api/cases",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "title": "Case by Tines - <<STORY_RUN_GUID()>>",
+          "tags": [],
+          "description": "This case was created by [Tines](<<STORY_RUN_LINK()>>) as a result of an alert triggering. It can be found attached to this case. ",
+          "connector": {
+            "id": "none",
+            "name": "none",
+            "type": ".none",
+            "fields": null
+          },
+          "owner": "securitySolution",
+          "settings": {
+            "syncAlerts": true
+          }
+        },
+        "headers": {
+          "kbn-xsrf": "true",
+          "Authorization": "ApiKey <<CREDENTIAL.elasticsearch>>"
+        },
+        "disable_ssl_verification": true
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Get DigitalOcean Droplet Details",
+      "disabled": false,
+      "guid": "b9e8280e939cff45fc22c9833da85f40",
+      "options": {
+        "url": "https://api.digitalocean.com/v2/droplets",
+        "content_type": "json",
+        "method": "get",
+        "payload": {},
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.digitalocean>>",
+          "Content-Type": "application/json"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Initiate Droplet Backup",
+      "disabled": false,
+      "guid": "a22e03692a6c9f84c5ee58ed822beffa",
+      "options": {
+        "url": "https://api.digitalocean.com/v2/droplets/<<extract_droplet_id.droplet.id>>/actions",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "type": "enable_backups"
+        },
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.digitalocean>>",
+          "Content-Type": "application/json"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Shutdown Droplet",
+      "disabled": false,
+      "guid": "ff54531aee088393f059b6e3c5a75b37",
+      "options": {
+        "url": "https://api.digitalocean.com/v2/droplets/<<extract_droplet_id.droplet.id>>/actions",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "type": "shutdown"
+        },
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.digitalocean>>",
+          "Content-Type": "application/json"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Extract Droplet ID",
+      "disabled": false,
+      "guid": "5970e508af851aee7f547fcfdda0e14f",
+      "options": {
+        "mode": "explode",
+        "path": "=get_digitalocean_droplet_details.body.droplets",
+        "to": "droplet"
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Add Comment to Case",
+      "disabled": false,
+      "guid": "c045148eae132b216318cc7471d182bf",
+      "options": {
+        "url": "https://<<RESOURCE.kibana_url>>/api/cases/<<create_elastic_siem_case.body.id>>/comments",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "type": "user",
+          "comment": "**<<extract_droplet_id.droplet.name>>** was **<%if shutdown_droplet.status = 201%> successfully <%else%> unsuccessfully <%endif%> ** backed up and powered off after being determined as infected by <<get_details.filename>>, SHA: <<get_details.sha1sum>>. It's a malicious file that listed on [Virustotal](https://www.virustotal.com/gui/search/<<get_details.sha1sum>>). The response to the request can be found below:\n## Back-up Request\n```\n<<NEAT_JSON(initiate_droplet_backup.body)>>\n```\n## Shutdown Request\n```\n<<NEAT_JSON(shutdown_droplet.body)>>\n```\n\nClick [here](https://cloud.digitalocean.com/droplets/<<extract_droplet_id.droplet.id>>) to view this effect in the DigitalOcean.",
+          "owner": "securitySolution"
+        },
+        "headers": {
+          "kbn-xsrf": "true",
+          "Authorization": "ApiKey <<CREDENTIAL.elasticsearch>>"
+        },
+        "disable_ssl_verification": true
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::EmailAgent",
+      "name": "Email Action",
+      "disabled": false,
+      "guid": "7bf1abfa887faca7481ad2bbb86513f2",
+      "options": {
+        "recipients": [
+          "demo-ta3@tutanota.com"
+        ],
+        "subject": "New Case created in Elastic Security",
+        "body": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\">\n<head>\n<meta name=\"viewport\" content=\"width=device-width\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n\n\n<style type=\"text/css\">\nimg {\nmax-width: 100%;\n}\nbody {\n-webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;\n}\nbody {\nbackground-color: #f6f6f6;\n}\n@media only screen and (max-width: 640px) {\n  body {\n    padding: 0 !important;\n  }\n  h1 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h2 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h3 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h4 {\n    font-weight: 800 !important; margin: 20px 0 5px !important;\n  }\n  h1 {\n    font-size: 22px !important;\n  }\n  h2 {\n    font-size: 18px !important;\n  }\n  h3 {\n    font-size: 16px !important;\n  }\n  .container {\n    padding: 0 !important; width: 100% !important;\n  }\n  .content {\n    padding: 0 !important;\n  }\n  .content-wrap {\n    padding: 10px !important;\n  }\n  .invoice {\n    width: 100% !important;\n  }\n}\n</style>\n</head>\n\n<body itemscope itemtype=\"http://schema.org/EmailMessage\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\">\n\n<table class=\"body-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;\" bgcolor=\"#f6f6f6\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\"></td>\n\t\t<td class=\"container\" width=\"600\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;\" valign=\"top\">\n\t\t\t<div class=\"content\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;\">\n\t\t\t\t<table class=\"main\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;\" bgcolor=\"#fff\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"alert alert-warning\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;\" align=\"center\" bgcolor=\"#FF9F00\" valign=\"top\">\n\t\t\t\t\t\t\tNew Case Created in Elastic Security.\n\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-wrap\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tA new case has been created that requires your attention. Click on the link below to view.\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\t<a href=\"<<APPEND(\"https://\", RESOURCE.kibana_url)>>/app/security/cases/<<create_elastic_siem_case.body.id>>\" class=\"btn-primary\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;\">Go to case</a>\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;\" valign=\"top\">\n\t\t\t\t\t\t\t\t\t\tSent via Tines automation <<STORY_RUN_GUID()>>\n\t\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t</tr></table></td>\n\t\t\t\t\t</tr></table><div class=\"footer\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;\">\n\t\t\t\t\t<table width=\"100%\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><tr style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;\"><td class=\"aligncenter content-block\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;\" align=\"center\" valign=\"top\"><a href=\"<<STORY_RUN_LINK()>>\" style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\">View</a> Tines story run.</td>\n\t\t\t\t\t\t</tr></table></div></div>\n\t\t</td>\n\t\t<td style=\"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;\" valign=\"top\"></td>\n\t</tr></table></body>\n</html>"
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Post Message to Telegram Bot",
+      "disabled": false,
+      "guid": "eb59bb08f45a51246c20559db991bf4f",
+      "options": {
+        "url": "https://api.telegram.org/bot<<CREDENTIAL.telegram_bot>>/sendMessage",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "chat_id": "<<RESOURCE.telegram_chat_id>>",
+          "text": "[Alert - <<elastic_security_webhook.body.name>>]\nAn alert created in Elastic Security detected as <<elastic_security_webhook.body.name>> at <<elastic_security_webhook.body.time>>.\n\nThis alert related to malicious file named <<get_details.filename>> with SHA <<get_details.sha1sum>>.\nDetected as malicious using Virustotal result at https://www.virustotal.com/gui/search/<<get_details.sha1sum>>.\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\n(DEMO TA3)"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Post Message to Telegram Bot",
+      "disabled": false,
+      "guid": "059484dcdf2f9cc1b417dbf322fe69a1",
+      "options": {
+        "url": "https://api.telegram.org/bot<<CREDENTIAL.telegram_bot>>/sendMessage",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "chat_id": "<<RESOURCE.telegram_chat_id>>",
+          "text": "[Alert - <<elastic_security_webhook.body.name>>]\nAn alert created in Elastic Security detected as <<elastic_security_webhook.body.name>> at <<elastic_security_webhook.body.time>>.\n\nSource IP: <<query_correlated_event.body._source.source.ip>>\nOrganization:\n<<query_correlated_event.body._source.source.as.organization.name>>\nCountry: <<query_correlated_event.body._source.source.geo.country_name>>\n\nDetected as malicious using Greynoise Community with result at https://www.greynoise.io/viz/ip/<<query_correlated_event.body._source.source.ip>>.\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\n(DEMO TA3)"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Is Bruteforce Web Attempt?",
+      "disabled": false,
+      "guid": "879ec8aaaf030a23eb8ad8075a4a2bad",
+      "options": {
+        "rules": [
+          {
+            "type": "in",
+            "value": "bruteforce",
+            "path": "=elastic_security_webhook.body.alert_tag"
+          }
+        ]
+      },
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Post Message to Telegram Bot",
+      "disabled": false,
+      "guid": "33d36ab01feefe8cf416e8df26aca326",
+      "options": {
+        "url": "https://api.telegram.org/bot<<CREDENTIAL.telegram_bot>>/sendMessage",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "chat_id": "<<RESOURCE.telegram_chat_id>>",
+          "text": "[Alert - <<elastic_security_webhook.body.name>>]\nAn alert created in Elastic Security detected as <<elastic_security_webhook.body.name>> at <<elastic_security_webhook.body.time>>.\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\n(DEMO TA3)"
+        }
+      },
+      "schedule": null,
+      "keep_events_for": 0
+    },
+    {
+      "type": "Agents::EmailAgent",
+      "name": "Email Action",
+      "disabled": false,
+      "guid": "5dad791402348329c2b5d9b171f6e25b",
+      "options": {
+        "recipients": [
+          "demo-ta3@tutanota.com"
+        ],
+        "subject": "New Attack Detected in Elastic Security (tags: <<elastic_security_webhook.body.alert_tag>>)",
+        "body": "Hello,\\<br/>\\<br/>\n\nAn alert has been detected that relates to <<elastic_security_webhook.body.name>>.\n\nURL path related to this attack is: <<HTML_ENCODE(query_correlated_event.body.url.path)>>\\<br/>\\<br/>\n\nPlease consider to check it at https://35.240.140.173:5601/app/security/rules/id/<<elastic_security_webhook.body.alert_id>>.\\<br/>\\<br/>\n\n(DEMO TA3)"
+      },
+      "schedule": null,
+      "keep_events_for": 0
     }
   ],
   "diagram_notes": [],
   "links": [
     {
       "source": 0,
-      "receiver": 12
+      "receiver": 24
+    },
+    {
+      "source": 1,
+      "receiver": 34
     },
     {
       "source": 1,
@@ -861,44 +966,44 @@
       "receiver": 4
     },
     {
-      "source": 2,
-      "receiver": 0
-    },
-    {
       "source": 3,
       "receiver": 2
     },
     {
       "source": 4,
-      "receiver": 12
-    },
-    {
-      "source": 5,
-      "receiver": 11
-    },
-    {
-      "source": 5,
       "receiver": 8
     },
     {
       "source": 5,
-      "receiver": 6
+      "receiver": 22
     },
     {
-      "source": 6,
+      "source": 5,
+      "receiver": 21
+    },
+    {
+      "source": 5,
       "receiver": 7
     },
     {
+      "source": 6,
+      "receiver": 20
+    },
+    {
       "source": 7,
-      "receiver": 16
+      "receiver": 3
     },
     {
       "source": 8,
-      "receiver": 18
+      "receiver": 12
     },
     {
       "source": 8,
-      "receiver": 9
+      "receiver": 19
+    },
+    {
+      "source": 9,
+      "receiver": 14
     },
     {
       "source": 9,
@@ -906,90 +1011,90 @@
     },
     {
       "source": 10,
-      "receiver": 17
+      "receiver": 33
     },
     {
-      "source": 11,
-      "receiver": 3
-    },
-    {
-      "source": 12,
-      "receiver": 32
+      "source": 10,
+      "receiver": 11
     },
     {
       "source": 12,
-      "receiver": 19
+      "receiver": 13
     },
     {
       "source": 13,
-      "receiver": 14
-    },
-    {
-      "source": 13,
-      "receiver": 21
+      "receiver": 9
     },
     {
       "source": 14,
       "receiver": 15
     },
     {
+      "source": 17,
+      "receiver": 16
+    },
+    {
       "source": 18,
-      "receiver": 10
+      "receiver": 17
     },
     {
       "source": 19,
-      "receiver": 20
-    },
-    {
-      "source": 20,
-      "receiver": 13
+      "receiver": 18
     },
     {
       "source": 21,
-      "receiver": 22
+      "receiver": 23
+    },
+    {
+      "source": 22,
+      "receiver": 6
     },
     {
       "source": 23,
-      "receiver": 26
+      "receiver": 0
     },
     {
       "source": 24,
       "receiver": 25
     },
     {
-      "source": 26,
-      "receiver": 28
+      "source": 25,
+      "receiver": 26
     },
     {
       "source": 26,
-      "receiver": 24
-    },
-    {
-      "source": 26,
-      "receiver": 27
-    },
-    {
-      "source": 27,
-      "receiver": 25
-    },
-    {
-      "source": 28,
-      "receiver": 25
-    },
-    {
-      "source": 30,
       "receiver": 29
     },
     {
-      "source": 31,
+      "source": 27,
+      "receiver": 28
+    },
+    {
+      "source": 28,
       "receiver": 30
     },
     {
-      "source": 32,
+      "source": 29,
+      "receiver": 27
+    },
+    {
+      "source": 30,
+      "receiver": 32
+    },
+    {
+      "source": 30,
       "receiver": 31
+    },
+    {
+      "source": 34,
+      "receiver": 35
+    },
+    {
+      "source": 35,
+      "receiver": 36
     }
   ],
-  "diagram_layout": "{\"b9aef70da51d0368660c4b884ac49e26\":[1380,255],\"fa89c3f9ab56dcab1d5042b33f9f2c94\":[1725,-345],\"d3fe7815cd6b072e7334a4d17089adbf\":[1380,150],\"b79ffa325958eb5f573c8dfdc1701895\":[1380,45],\"6c9552dd681c08bb8bdf394c2b7848fe\":[1110,255],\"dcb3e9143d5ed86e8647c422ad4452b5\":[1725,-225],\"c2a0df4a640bef615a642511c6701ccb\":[1725,-90],\"3f1dfe4761ef11543d0c05ff09c088f3\":[1725,15],\"ddcc60ad9864ffdd328ed3b922508bde\":[2085,-90],\"94647b324111beee4c81266798a5f486\":[2265,15],\"68f1d9fa1811385b319713c57eb63495\":[2085,120],\"022337670ca6d53b92f67c7a5c7b5be4\":[1380,-90],\"74e4d7a50a29c00b2611fbbd50f0ef99\":[1290,390],\"468ed7b662b25d90f12e59b0443a5061\":[1020,705],\"7d530694201a3af221c8f489eccc811c\":[1050,825],\"7425d9a7887e96394a78691503d59fd6\":[1080,930],\"8c1ea2b1e135c69a757b885aefecbc52\":[1725,120],\"883dfa3a5981e6bf58ee5182ba3ca077\":[2085,225],\"f469ce4d9b7ab4e5e7ea9a999d561160\":[2085,15],\"86f3ad866e580f78de98535194d4d355\":[1020,510],\"ccedc2879e41df21d81167bf553fe96d\":[1020,615],\"199451f95dab416d831edd0a2ac26218\":[780,825],\"bfef94d6ebfbb88a879c3aba198ea553\":[780,915],\"189194ebd24e2c45b45a8793855e0c1f\":[1995,495],\"34efb03777c561d430ceacb9c896ec25\":[2250,705],\"e2d0add2892ce68967c78d58ea87a118\":[1995,840],\"1001d87e0f37c85d7a4a3ed2a59f4d53\":[1995,585],\"4de1a2aeb6f210d36f8802a797348e4d\":[1995,705],\"9e4702aece87e13236d0cd6a95df7f5f\":[1740,705],\"575f7ccda14a3dee456eee4dd87f7e03\":[1290,825],\"41fc12032c2d2cfece77dcee7dd25399\":[1290,720],\"8e68022fb8d9953332cf7123f1a8d2c7\":[1290,615],\"2ade3e1c2d2fd8cccf4d2b6b424270e3\":[1290,510]}",
+  "diagram_layout": "{\"23821d898f31b4bdc84309b31cc4ffb4\":[1725,-45],\"bc563c782db08bd6ad031d6c1e636631\":[1725,-345],\"dee92c030190e6cf1acc4f6f10782e65\":[1425,0],\"3507d90aeee3229a1782ccc515f32812\":[1425,-75],\"27339ffe75b2a342d8490b511eee4f58\":[1425,75],\"60d702c85145c59f0f85ce64b129b6bc\":[1725,-270],\"586f4d6050c704d0ad8faa9f7ff0c3a4\":[2010,-30],\"2e72eb81a789a66469ffeaeaca08fa2c\":[1425,-150],\"8e65860f5eb4ff946318df4154773475\":[1380,180],\"2fd7ce62dba8b1fdb423540425f0ed5d\":[1125,435],\"aa3b94d0f16d21ce427b7a1d0c9bbdaa\":[1125,525],\"2aa8e8cbcf7fb08116cada33e6d14803\":[1125,630],\"3db4792977f4d26b695c9f00a064c217\":[1125,270],\"43a74ee3412fd4ab71c5f39de2c0c481\":[1125,360],\"19dcb7aeaf9b39568409219cafb69327\":[870,540],\"3317f2c30498cc8d1eff9efd5a299d8a\":[870,630],\"ba1d92d54c7e1eafe7ffd5141447ca45\":[1425,525],\"90d1f52868b79f132521a52125b35a44\":[1425,435],\"fc25e6cedbbba400a30d74e8a35387c8\":[1425,345],\"2e153889e4646813dfe16bdc91f7f505\":[1425,270],\"134cf4f43f304b2831679434d0219edf\":[2010,45],\"1bf09ea9e87a9d3438dbe64a96894722\":[1725,-195],\"307010d15d1f2f5ad0dced672ff7eb53\":[2010,-105],\"b314391efbd900a9a13d0fdbb1b2b99d\":[1725,-120],\"2330ca109d0b71ddf11a5b3d94e5ae80\":[1725,45],\"0942b0755259d1a78eac6a1488131c0c\":[1725,120],\"b9e8280e939cff45fc22c9833da85f40\":[1725,195],\"a22e03692a6c9f84c5ee58ed822beffa\":[1725,360],\"ff54531aee088393f059b6e3c5a75b37\":[1725,435],\"5970e508af851aee7f547fcfdda0e14f\":[1725,285],\"c045148eae132b216318cc7471d182bf\":[1725,510],\"7bf1abfa887faca7481ad2bbb86513f2\":[1980,585],\"eb59bb08f45a51246c20559db991bf4f\":[1725,585],\"059484dcdf2f9cc1b417dbf322fe69a1\":[1290,630],\"879ec8aaaf030a23eb8ad8075a4a2bad\":[2265,-105],\"33d36ab01feefe8cf416e8df26aca326\":[2265,-30],\"5dad791402348329c2b5d9b171f6e25b\":[2265,45]}",
   "send_to_story_enabled": false,
   "entry_agent_guid": null,
   "exit_agent_guids": [],
@@ -1000,29 +1105,16 @@
     "description": "This form can used for doing analysis about URL, IP address, or Checksum (SHA256, etc) about suspicious files/executable.\n\n(Demo TA3)",
     "fields": [
       {
-        "name": "Checksum You Want to Analyze?",
+        "name": "Your email",
         "description": "",
-        "required": false,
-        "type": "SHORT_TEXT",
+        "required": true,
+        "type": "EMAIL",
         "multi_select": false,
         "options": [
           "Option 1",
           "Option 2"
         ],
-        "ranking": 1879048192,
-        "max_characters": null
-      },
-      {
-        "name": "IP Address You Want to Analyze?",
-        "description": "",
-        "required": false,
-        "type": "SHORT_TEXT",
-        "multi_select": false,
-        "options": [
-          "Option 1",
-          "Option 2"
-        ],
-        "ranking": 1610612736,
+        "ranking": 0,
         "max_characters": null
       },
       {
@@ -1039,21 +1131,34 @@
         "max_characters": null
       },
       {
-        "name": "Your email",
+        "name": "IP Address You Want to Analyze?",
         "description": "",
-        "required": true,
-        "type": "EMAIL",
+        "required": false,
+        "type": "SHORT_TEXT",
         "multi_select": false,
         "options": [
           "Option 1",
           "Option 2"
         ],
-        "ranking": 0,
+        "ranking": 1610612736,
+        "max_characters": null
+      },
+      {
+        "name": "Checksum You Want to Analyze?",
+        "description": "",
+        "required": false,
+        "type": "SHORT_TEXT",
+        "multi_select": false,
+        "options": [
+          "Option 1",
+          "Option 2"
+        ],
+        "ranking": 1879048192,
         "max_characters": null
       }
     ],
     "visibility": "world",
-    "agent_guid": "189194ebd24e2c45b45a8793855e0c1f",
+    "agent_guid": null,
     "success_message": "Thank you for your submission. Please check in your inbox for results."
   }
 }
